@@ -1,5 +1,7 @@
 # GitHub Actions workflow for deploying to DigitalOcean
 # This allows auto-deploy on git push
+# DISABLED: Currently deploying to Render.com instead
+# To enable: Set GitHub secrets (DROPLET_IP, DROPLET_USER, SSH_PRIVATE_KEY) and change if: false to if: true
 
 name: Deploy to DigitalOcean
 
@@ -11,6 +13,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Skip job - currently using Render.com for deployment
+    # Change to 'if: true' and configure secrets to enable DigitalOcean deployment
+    if: false
     
     steps:
     - name: Deploy to DigitalOcean via SSH

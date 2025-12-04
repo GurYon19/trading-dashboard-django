@@ -17,13 +17,7 @@ services:
           name: trading-dashboard-db
           property: connectionString
       - key: EMAIL_BACKEND
-        value: django.core.mail.backends.smtp.EmailBackend
-      - key: EMAIL_HOST
-        value: smtp.sendgrid.net
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USE_TLS
-        value: True
+        value: django.core.mail.backends.console.EmailBackend
 
 databases:
   - name: trading-dashboard-db

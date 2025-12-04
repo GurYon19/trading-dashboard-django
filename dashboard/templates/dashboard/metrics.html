@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Metrics - Trading Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="gradient-text">Summary Metrics</h1>
+    <p class="text-muted">
+        Daily, intraday, and per-instrument statistics for your selected instruments and date range.
+    </p>
+</div>
+
+<div class="dashboard-header">
+    <div class="metrics-grid metrics-grid-5">
+        <div class="metric-card">
+            <div class="metric-label">Total Net Profit</div>
+            <div class="metric-value">
+                {% if combined_stats.Total_Net_Profit %}
+                    ${{ combined_stats.Total_Net_Profit|floatformat:0|intcomma }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Max Drawdown</div>
+            <div class="metric-value">
+                {% if combined_stats.Max_Drawdown %}
+                    ${{ combined_stats.Max_Drawdown|floatformat:0|intcomma }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Trades</div>
+            <div class="metric-value">
+                {{ combined_stats.Number_of_Trades|default:"0" }}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Win Rate</div>
+            <div class="metric-value">
+                {% if combined_stats.Percent_Profitable %}
+                    {{ combined_stats.Percent_Profitable|floatformat:1 }}%
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Instruments</div>
+            <div class="metric-value">
+                {{ instruments_stats|length }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Key Metrics Comparison</h2>
+    </div>
+    <div class="card-body">
+        {% if key_metrics_chart_html %}
+            {{ key_metrics_chart_html|safe }}
+        {% else %}
+            <p class="text-muted">No data available for the selected filters.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Performance Comparison</h2>
+    </div>
+    <div class="card-body">
+        {% if performance_comparison_chart_html %}
+            {{ performance_comparison_chart_html|safe }}
+        {% else %}
+            <p class="text-muted">No data available for the selected filters.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Win / Loss Count by Instrument</h2>
+    </div>
+    <div class="card-body">
+        {{ winloss_chart_html|safe }}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Average Trade & Win/Loss Ratio</h2>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem;">
+            <div>
+                {{ avgtrade_chart_html|safe }}
+            </div>
+            <div>
+                {{ winloss_ratio_chart_html|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

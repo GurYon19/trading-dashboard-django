@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Download Strategy - Free Trial Started{% endblock %}
+
+{% block content %}
+<div class="purchase-page">
+    <h1>✅ Your Free Trial Has Started</h1>
+
+    <div class="hero-section">
+        <h2>{{ strategy.display_name }}</h2>
+        <p class="hero-text">
+            Your <strong>7-day free trial</strong> is now active and tied to your registered Machine ID.
+            Download the NinjaTrader strategy files below and follow the setup steps to get started.
+        </p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2 class="section-title">📅 Trial Details</h2>
+    <div class="included-list">
+        <div class="included-item">
+            <strong>Status:</strong>
+            {% if trial.is_active %}
+                Active
+            {% else %}
+                {{ trial.status|title }}
+            {% endif %}
+        </div>
+        <div class="included-item">
+            <strong>Ends At:</strong>
+            {{ trial.ends_at|date:"Y-m-d H:i" }} (server time)
+        </div>
+        <div class="included-item">
+            <strong>Days Remaining:</strong>
+            {{ trial.days_remaining }}
+        </div>
+        <div class="included-item">
+            <strong>Machine ID (hashed):</strong>
+            {{ trial.machine_id_snapshot }}
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2 class="section-title">📥 Download Strategy Files</h2>
+    <div class="cta-section">
+        {# 
+           In a real deployment, point this href at:
+           - a static file (e.g. {% static 'strategies/roa305_multi.zip' %})
+           - or a protected download endpoint that streams the file.
+        #}
+        <a href="{% static 'strategies/roa305_multi.zip' %}"
+           class="cta-button primary"
+           download>
+            📥 Download NinjaTrader Strategy (.zip)
+        </a>
+        <p class="cta-subtitle">
+            Save the file, then import it into NinjaTrader using the standard import workflow.
+            If the file is not yet available, this button will simply 404 until you add the zip.
+        </p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2 class="section-title">🛠 Setup Instructions (High Level)</h2>
+    <div class="included-list">
+        <div class="included-item">
+            1️⃣ Open <strong>NinjaTrader</strong> and go to
+            <em>Tools → Import → NinjaScript Add-On</em>.
+        </div>
+        <div class="included-item">
+            2️⃣ Select the downloaded <code>roa305_multi.zip</code> file and complete the import.
+        </div>
+        <div class="included-item">
+            3️⃣ Add the strategy to a chart or strategy analyzer and enable it in <strong>SIM</strong> first.
+        </div>
+        <div class="included-item">
+            4️⃣ Monitor results and risk; this is a trial, not investment advice.
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="cta-section secondary">
+        <h3 class="cta-heading">Next Steps</h3>
+        <p class="cta-subtitle">
+            During your trial, you can revisit the <a href="{% url 'dashboard:performance' %}">Performance</a>
+            and <a href="{% url 'dashboard:metrics' %}">Metrics</a> pages to review historical behavior,
+            and use this dashboard to track your own results.
+        </p>
+        <a href="{% url 'users:profile' %}" class="cta-button secondary">
+            👤 Go to My Account
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+
+

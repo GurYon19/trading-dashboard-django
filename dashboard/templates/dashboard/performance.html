@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Performance - Trading Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="gradient-text">Performance Overview</h1>
+    <p class="text-muted">
+        Equity, drawdowns, and per-instrument performance for your selected instruments and date range.
+    </p>
+</div>
+
+<div class="dashboard-header">
+    <div class="metrics-grid metrics-grid-5">
+        <div class="metric-card">
+            <div class="metric-label">Total Net Profit</div>
+            <div class="metric-value">
+                {% if combined_stats.Total_Net_Profit %}
+                    ${{ combined_stats.Total_Net_Profit|floatformat:0|intcomma }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Weekly Profit</div>
+            <div class="metric-value">
+                {% if avg_weekly_profit %}
+                    ${{ avg_weekly_profit|floatformat:0|intcomma }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Trades</div>
+            <div class="metric-value">
+                {{ total_trades|default:"0" }}
+            </div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Instruments</div>
+            <div class="metric-value">
+                {{ instruments_stats|length }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Equity Curves</h2>
+    </div>
+    <div class="card-body">
+        <div id="equityCurves" style="height: 420px;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Drawdown Curves</h2>
+    </div>
+    <div class="card-body">
+        <div id="drawdownCurves" style="height: 420px;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Monthly Performance</h2>
+    </div>
+    <div class="card-body">
+        <div id="monthlyPerformance" style="height: 320px;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Trade Timeline</h2>
+    </div>
+    <div class="card-body">
+        <div id="tradeTimeline" style="height: 420px;"></div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    (function () {
+        const equityData = {{ plotly_equity_json|safe }};
+        const drawdownData = {{ plotly_drawdown_json|safe }};
+        const monthlyData = {{ plotly_monthly_json|safe }};
+        const timelineData = {{ plotly_timeline_json|safe }};
+
+        if (Array.isArray(equityData) && equityData.length) {
+            const traces = equityData.map(t => ({
+                x: t.x,
+                y: t.y,
+                type: t.type || 'scatter',
+                mode: t.mode || 'lines',
+                name: t.name,
+                line: Object.assign({ width: 2 }, t.line || {}),
+            }));
+            Plotly.newPlot('equityCurves', traces, {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Cumulative Profit ($)' }
+            }, {displaylogo: false});
+        }
+
+        if (Array.isArray(drawdownData) && drawdownData.length) {
+            const traces = drawdownData.map(t => ({
+                x: t.x,
+                y: t.y,
+                type: t.type || 'scatter',
+                mode: t.mode || 'lines',
+                name: t.name,
+                fill: t.fill || 'tozeroy',
+                line: Object.assign({ width: 1 }, t.line || {}),
+            }));
+            Plotly.newPlot('drawdownCurves', traces, {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Drawdown ($)' }
+            }, {displaylogo: false});
+        }
+
+        if (monthlyData && monthlyData.x) {
+            const traceProfit = {
+                x: monthlyData.x,
+                y: monthlyData.profit,
+                type: 'bar',
+                name: 'Net Profit',
+                marker: { color: '#22c55e' }
+            };
+            Plotly.newPlot('monthlyPerformance', [traceProfit], {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                xaxis: { title: 'Month' },
+                yaxis: { title: 'Net Profit ($)' }
+            }, {displaylogo: false});
+        }
+
+        if (Array.isArray(timelineData) && timelineData.length) {
+            const traces = timelineData.map(t => ({
+                x: t.x,
+                y: t.y,
+                type: t.type || 'scatter',
+                mode: t.mode || 'lines',
+                name: t.name,
+                marker: t.marker || {},
+                line: t.line || {}
+            }));
+            Plotly.newPlot('tradeTimeline', traces, {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Cumulative Profit ($)' }
+            }, {displaylogo: false});
+        }
+    })();
+</script>
+{% endblock %}
+{% endblock %}
+
+

@@ -1,0 +1,763 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Purchase Strategy - Trading Dashboard{% endblock %}
+
+{% block content %}
+<div class="purchase-page">
+    <h1>🛒 Purchase or Rent Trading Strategy</h1>
+    
+    <!-- Historical Data Banner -->
+    <div class="compliance-banner">
+        <strong>⚠️ Historical Performance Disclosure:</strong> The performance data shown in this dashboard represents historical backtested results and does not guarantee future performance. Past results are not indicative of future returns. Trading involves substantial risk of loss.
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h2>🚀 Professional Multi-Instrument Trading Strategy</h2>
+        <p class="hero-text">
+            Explore automated trading across multiple instruments with the ROA305 strategy suite. Past performance shown in this dashboard does not guarantee future results. Trading involves substantial risk.
+        </p>
+    </div>
+
+    <!-- Social Proof / Performance Results -->
+    <h2 class="section-title">📊 Proven Performance (Historical Backtest)</h2>
+    <div class="performance-banner">
+        <p class="performance-note">
+            <strong>Real Results from 2025 Backtest Data</strong> - The metrics below represent actual historical performance of the ROA305 strategy across multiple instruments.
+        </p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card highlight">
+            <div class="stat-label">Total Net Profit</div>
+            <div class="stat-value positive">{{ total_net_profit|default:"N/A" }}</div>
+            <div class="stat-delta">Based on historical data</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-value">{{ win_rate|default:"N/A" }}{% if win_rate %}%{% endif %}</div>
+            <div class="stat-delta">Consistent profitability</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Total Trades</div>
+            <div class="stat-value">{{ total_trades|default:"N/A" }}</div>
+            <div class="stat-delta">Statistically significant</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Avg Weekly Profit</div>
+            <div class="stat-value positive">{{ avg_weekly_profit|default:"N/A" }}</div>
+            <div class="stat-delta">Steady returns</div>
+        </div>
+    </div>
+    
+    <div class="performance-cta">
+        <p>👉 <strong>See the full performance breakdown</strong> in the <a href="{% url 'dashboard:performance' %}">Performance</a> and <a href="{% url 'dashboard:metrics' %}">Metrics</a> tabs</p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Key Benefits -->
+    <h2 class="section-title">✨ What You Get</h2>
+    <div class="benefits-grid">
+        <div class="benefit-card">
+            <h3>🎯 Multi-Instrument Coverage</h3>
+            <ul>
+                <li>Trade 7+ instruments simultaneously</li>
+                <li>Diversified portfolio approach</li>
+            </ul>
+        </div>
+        
+        <div class="benefit-card">
+            <h3>⚡ Fully Automated</h3>
+            <ul>
+                <li>No manual intervention needed</li>
+                <li>24/7 market monitoring</li>
+                <li>Instant order execution</li>
+            </ul>
+        </div>
+        
+        <div class="benefit-card">
+            <h3>📊 Historical Performance</h3>
+            <ul>
+                <li>Backtested strategies</li>
+                <li>Real-time performance tracking</li>
+                <li>Transparent results</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing -->
+    <h2 class="section-title">💰 Pricing Options</h2>
+    <div class="pricing-grid">
+        <div class="pricing-card purchase">
+            <h3>Purchase</h3>
+            <div class="price">$997</div>
+            <p class="price-subtitle">One-time payment</p>
+            <ul class="pricing-features">
+                <li>Lifetime access</li>
+                <li>Email support</li>
+                <li>No recurring fees</li>
+                <li>One-time payment</li>
+            </ul>
+        </div>
+        
+        <div class="pricing-card rental">
+            <h3>Monthly Rental</h3>
+            <div class="price">$97<span class="price-period">/mo</span></div>
+            <p class="price-subtitle">Recurring monthly</p>
+            <ul class="pricing-features">
+                <li>Full access while subscribed</li>
+                <li>Future updates and optimizations</li>
+                <li>Email support</li>
+                <li>Cancel anytime</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+    
+    <!-- Primary CTA -->
+    <div class="cta-section">
+        {% if user.is_authenticated %}
+            {% if user.has_machine_id %}
+                <a href="{% url 'dashboard:checkout' %}" class="cta-button primary">
+                    🚀 Start Free Trial Now
+                </a>
+                <p class="cta-subtitle">
+                    Review your selected instruments and confirm your 7-day free trial on the checkout page.
+                    After confirming, you'll be able to download the strategy files immediately.
+                </p>
+            {% else %}
+                <a href="{% url 'users:set_machine_id' %}" class="cta-button primary">
+                    🚀 Start Free Trial Now
+                </a>
+                <p class="cta-subtitle">
+                    Step 1: Register your machine ID
+                    • Step 2: Download a strategy from your account page to start your trial
+                </p>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'users:register' %}?next={% url 'users:set_machine_id' %}" class="cta-button primary">
+                🚀 Start Free Trial Now
+            </a>
+            <p class="cta-subtitle">
+                Create account → Set machine ID → Download strategy to auto-start your 7-day free trial
+                • No credit card required
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- What's Included -->
+    <h2 class="section-title">📦 What's Included</h2>
+    <div class="included-list">
+        <div class="included-item">✅ <strong>Complete NinjaTrader Strategy Files</strong> - Ready to import and use</div>
+        <div class="included-item">✅ <strong>Lifetime Updates</strong> - Free strategy improvements and bug fixes</div>
+        <div class="included-item">✅ <strong>Email Support</strong> - Direct support from the developer</div>
+        <div class="included-item">✅ <strong>Performance Dashboard</strong> - Track your results in real-time</div>
+        <div class="included-item">✅ <strong>Documentation</strong> - Setup guides and best practices</div>
+        <div class="included-item">✅ <strong>Machine-Locked License</strong> - Secure licensing tied to your NinjaTrader installation</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- FAQ Section -->
+    <h2 class="section-title">❓ Frequently Asked Questions</h2>
+    <div class="faq-container">
+        <details class="faq-item">
+            <summary class="faq-question">How long does setup take?</summary>
+            <div class="faq-answer">
+                <p>Setup typically takes a few minutes. You'll receive:</p>
+                <ul>
+                    <li>Strategy files ready to import into NinjaTrader</li>
+                    <li>Step-by-step installation guide</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary class="faq-question">Can I get a refund?</summary>
+            <div class="faq-answer">
+                <p>We offer a <strong>7-day free trial</strong> so you can test the strategy risk-free before committing. This allows you to:</p>
+                <ul>
+                    <li>Evaluate performance in simulation mode</li>
+                    <li>Verify compatibility with your setup</li>
+                    <li>Experience the strategy firsthand</li>
+                </ul>
+                <p>Please note: All sales are final. We encourage you to take full advantage of the free trial period to ensure the strategy meets your needs before purchasing.</p>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary class="faq-question">Do I need coding or programming experience?</summary>
+            <div class="faq-answer">
+                <p>No. The strategy is fully pre-built and ready to use. Simply import it into NinjaTrader and start trading.</p>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary class="faq-question">How does the machine license work?</summary>
+            <div class="faq-answer">
+                <p>The strategy is licensed to your specific NinjaTrader installation using a unique Machine ID. This means:</p>
+                <ul>
+                    <li>✅ Secure - Only you can use your license</li>
+                    <li>✅ One installation per license</li>
+                    <li>✅ Can be transferred if you upgrade computers (contact support)</li>
+                    <li>✅ No recurring activation required</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+    
+    <!-- Secondary CTA -->
+    <div class="cta-section secondary">
+        <h3 class="cta-heading">Ready to Transform Your Trading?</h3>
+        <a href="mailto:trading@example.com?subject=Get%20Started%20with%20ROA305" class="cta-button secondary">
+            📧 Get Started Now
+        </a>
+        <p class="cta-subtitle">Questions? Email us and we'll respond within 24 hours</p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Contact Information -->
+    <h2 class="section-title">📧 Get Started</h2>
+    <div class="contact-section">
+        <p>To purchase or rent this strategy, please contact us:</p>
+        
+        <div class="contact-info">
+            <div class="contact-item">
+                <strong>Email:</strong> <a href="mailto:trading@example.com">trading@example.com</a>
+            </div>
+            <div class="contact-item">
+                <strong>Website:</strong> <a href="https://www.example.com" target="_blank">www.example.com</a>
+            </div>
+        </div>
+        
+        <p class="contact-details">We'll provide you with:</p>
+        <ol class="contact-steps">
+            <li>Strategy files for NinjaTrader</li>
+            <li>Your unique machine ID license</li>
+            <li>Setup documentation</li>
+            <li>Access to this performance dashboard</li>
+        </ol>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Compliance Footer -->
+    <div class="compliance-footer">
+        <h3>Risk Disclosure</h3>
+        <p>
+            <strong>HYPOTHETICAL PERFORMANCE RESULTS HAVE MANY INHERENT LIMITATIONS.</strong> No representation is being made that any account will or is likely to achieve profits or losses similar to those shown. In fact, there are frequently sharp differences between hypothetical performance results and the actual results subsequently achieved by any particular trading program.
+        </p>
+        <p>
+            One of the limitations of hypothetical performance results is that they are generally prepared with the benefit of hindsight. In addition, hypothetical trading does not involve financial risk, and no hypothetical trading record can completely account for the impact of financial risk in actual trading.
+        </p>
+        <p>
+            <strong>PAST PERFORMANCE IS NOT NECESSARILY INDICATIVE OF FUTURE RESULTS.</strong> Trading futures and forex involves substantial risk of loss and is not suitable for all investors. You should carefully consider whether trading is suitable for you in light of your circumstances, knowledge, and financial resources.
+        </p>
+    </div>
+</div>
+
+<style>
+.purchase-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.purchase-page h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.compliance-banner {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, rgba(11, 18, 32, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+    padding: 2rem;
+    border-radius: 10px;
+    border-left: 4px solid #22c55e;
+    margin-bottom: 2rem;
+}
+
+.hero-section h2 {
+    color: #22c55e;
+    margin-top: 0;
+    font-size: 1.8rem;
+}
+
+.hero-text {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    margin: 2rem 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.performance-banner {
+    background: rgba(34, 197, 94, 0.1);
+    border-left: 4px solid #22c55e;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.performance-note {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--bg-elevated);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card.highlight {
+    border-color: #22c55e;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value.positive {
+    color: #22c55e;
+}
+
+.stat-delta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.performance-cta {
+    background: rgba(245, 158, 11, 0.08);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+}
+
+.performance-cta p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.performance-cta a {
+    color: #22c55e;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.performance-cta a:hover {
+    text-decoration: underline;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.benefit-card {
+    background: var(--bg-elevated);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.benefit-card h3 {
+    color: var(--accent);
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.benefit-card ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.benefit-card li {
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+}
+
+.included-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.included-item {
+    background: var(--bg-elevated);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    border-left: 3px solid #22c55e;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.pricing-card {
+    background: var(--bg-elevated);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 2px solid;
+    text-align: center;
+}
+
+.pricing-card.purchase {
+    border-color: #22c55e;
+}
+
+.pricing-card.rental {
+    border-color: #2196F3;
+}
+
+.pricing-card h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.pricing-card.purchase h3 {
+    color: #22c55e;
+}
+
+.pricing-card.rental h3 {
+    color: #2196F3;
+}
+
+.price {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 1rem 0;
+}
+
+.price-period {
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.price-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.pricing-features li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.contact-section {
+    background: var(--bg-elevated);
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.contact-section p {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.contact-item {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.contact-item a {
+    color: #22c55e;
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    text-decoration: underline;
+}
+
+.contact-details {
+    margin-top: 2rem;
+    font-weight: 600;
+}
+
+.contact-steps {
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.contact-steps li {
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+}
+
+.compliance-footer {
+    background: rgba(148, 163, 184, 0.05);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.compliance-footer h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+}
+
+.compliance-footer p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.section-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 3rem 0;
+}
+
+/* FAQ Section */
+.faq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.faq-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faq-item[open] {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.faq-question {
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.faq-question::-webkit-details-marker {
+    display: none;
+}
+
+.faq-question::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: #22c55e;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+.faq-item[open] .faq-question::after {
+    content: '−';
+    transform: rotate(180deg);
+}
+
+.faq-question:hover {
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.faq-answer {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.faq-answer p {
+    margin: 0 0 1rem 0;
+}
+
+.faq-answer p:last-child {
+    margin-bottom: 0;
+}
+
+.faq-answer ul, .faq-answer ol {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.faq-answer li {
+    margin-bottom: 0.5rem;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.comparison-table th {
+    background: rgba(34, 197, 94, 0.1);
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+.comparison-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.comparison-table tr:last-child td {
+    border-bottom: none;
+}
+
+.comparison-table tr:hover {
+    background: rgba(148, 163, 184, 0.05);
+}
+
+/* CTA Sections */
+.cta-section {
+    text-align: center;
+    padding: 3rem 2rem;
+    margin: 2rem 0;
+}
+
+.cta-section.secondary {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
+    border-radius: 12px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.cta-heading {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+    font-weight: 700;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 1.25rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button.primary {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: 2px solid #22c55e;
+}
+
+.cta-button.primary:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+.cta-button.secondary {
+    background: var(--bg-elevated);
+    color: #22c55e;
+    border: 2px solid #22c55e;
+}
+
+.cta-button.secondary:hover {
+    background: rgba(34, 197, 94, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+}
+
+.cta-subtitle {
+    margin-top: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

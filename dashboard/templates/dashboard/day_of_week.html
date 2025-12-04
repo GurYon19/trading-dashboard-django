@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Day of Week - Trading Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="gradient-text">Day of Week Analysis</h1>
+    <p class="text-muted">
+        How performance, trade count, and win rate change by day of the week.
+    </p>
+</div>
+
+<div class="account-detail-grid">
+    <div class="card">
+        <div class="card-header">
+            <h2>Total Net Profit by Day</h2>
+        </div>
+        <div class="card-body">
+            {% if profit_chart_html %}
+                {{ profit_chart_html|safe }}
+            {% else %}
+                <p class="text-muted">No data available for the selected filters.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Number of Trades by Day</h2>
+        </div>
+        <div class="card-body">
+            {% if trades_chart_html %}
+                {{ trades_chart_html|safe }}
+            {% else %}
+                <p class="text-muted">No data available for the selected filters.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Win Rate by Day</h2>
+        </div>
+        <div class="card-body">
+            {% if winrate_chart_html %}
+                {{ winrate_chart_html|safe }}
+            {% else %}
+                <p class="text-muted">No data available for the selected filters.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Average Trade by Day</h2>
+        </div>
+        <div class="card-body">
+            {% if avgtrade_chart_html %}
+                {{ avgtrade_chart_html|safe }}
+            {% else %}
+                <p class="text-muted">No data available for the selected filters.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Per-Instrument Comparison (All Instruments)</h2>
+    </div>
+    <div class="card-body">
+        <div class="section-divider"></div>
+        {% if profit_comparison_chart_html %}
+            {{ profit_comparison_chart_html|safe }}
+        {% endif %}
+        {% if trades_comparison_chart_html %}
+            {{ trades_comparison_chart_html|safe }}
+        {% endif %}
+        {% if winrate_comparison_chart_html %}
+            {{ winrate_comparison_chart_html|safe }}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+

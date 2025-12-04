@@ -1,0 +1,31 @@
+# GitHub Actions workflow for deploying to DigitalOcean
+# This allows auto-deploy on git push
+
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main  # Change to 'master' if that's your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to DigitalOcean via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DROPLET_IP }}
+        username: ${{ secrets.DROPLET_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/trading-dashboard
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py collectstatic --noinput
+          python manage.py migrate --noinput
+          sudo systemctl restart gunicorn
+          sudo systemctl restart nginx
+

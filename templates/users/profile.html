@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}My Account - Trading Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="gradient-text">My Account</h1>
+    <p class="text-muted">Manage your profile, trials, and strategy access in one place.</p>
+</div>
+
+<div class="profile-container fade-in">
+    <div class="account-summary-grid">
+        <div class="card lift-on-hover">
+            <div class="card-header">
+                <h2>Personal Information</h2>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Email Address</label>
+                    <p>{{ user.email }}</p>
+                </div>
+                {% if user.first_name or user.last_name %}
+                    <div class="profile-field">
+                        <label>Name</label>
+                        <p>{{ user.get_full_name|default:"Not set" }}</p>
+                    </div>
+                {% endif %}
+                <div class="profile-field">
+                    <label>Member Since</label>
+                    <p>{{ user.created_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card lift-on-hover">
+            <div class="card-header">
+                <h2>Subscription Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Subscription Status</label>
+                    <div class="status-badge status-{{ user.subscription_status }}">
+                        {{ user.get_subscription_status_display }}
+                    </div>
+                </div>
+                {% if user.has_lifetime_access %}
+                    <div class="profile-field">
+                        <label>Access Type</label>
+                        <p class="lifetime-badge">✨ Lifetime Access</p>
+                    </div>
+                {% elif user.subscription_end_date %}
+                    <div class="profile-field">
+                        <label>Subscription Expires</label>
+                        <p>{{ user.subscription_end_date|date:"F d, Y" }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="account-detail-grid">
+        <div class="card lift-on-hover">
+            <div class="card-header">
+                <h2>Free Trials & History</h2>
+            </div>
+            <div class="card-body">
+                <p class="account-section-description">
+                    Every free trial you've started, including expired ones. When a trial ends, you can actively choose to rent or purchase.
+                </p>
+                {% if trials %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th>Status</th>
+                                <th>Machine ID</th>
+                                <th>Started</th>
+                                <th>Ends</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trial in trials %}
+                                <tr>
+                                    <td>{{ trial.strategy_name }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ trial.status }}">
+                                            {{ trial.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ trial.machine_id_snapshot }}</td>
+                                    <td>{{ trial.started_at|date:"F d, Y" }}</td>
+                                    <td>{{ trial.ends_at|date:"F d, Y" }}</td>
+                                    <td>
+                                        {% if trial.status == 'active' %}
+                                            <small>Trial running</small>
+                                        {% elif trial.status == 'expired' %}
+                                            <!-- User must actively choose to continue -->
+                                            <a href="{% url 'dashboard:purchase' %}" class="btn btn-sm btn-primary">
+                                                Activate / Purchase
+                                            </a>
+                                        {% elif trial.status == 'converted' %}
+                                            <small>Converted to paid</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No trials yet. Start a free trial from the Purchase page.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card lift-on-hover">
+            <div class="card-header">
+                <h2>Rented / Purchased Access</h2>
+            </div>
+            <div class="card-body">
+                <p class="account-section-description">
+                    All active and past rentals or lifetime purchases linked to your account.
+                </p>
+                {% if subscriptions %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Ends</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subscriptions %}
+                                <tr>
+                                    <td>{{ sub.strategy_name }}</td>
+                                    <td>{{ sub.get_access_type_display }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ sub.status }}">
+                                            {{ sub.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sub.started_at|date:"F d, Y" }}</td>
+                                    <td>
+                                        {% if sub.access_type == 'lifetime' %}
+                                            Lifetime
+                                        {% elif sub.ends_at %}
+                                            {{ sub.ends_at|date:"F d, Y" }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No active rentals or purchases yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card lift-on-hover">
+            <div class="card-header">
+                <h2>Trading Information</h2>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Machine ID</label>
+                    {% if user.machine_id %}
+                        <p>{{ user.machine_id }}</p>
+                    {% else %}
+                        <p class="text-muted">Not configured</p>
+                    {% endif %}
+                </div>
+                <p class="account-section-description">
+                    If your machine ID changes (hardware reset or new PC), please contact support to update your license.
+                </p>
+            </div>
+        </div>
+    </div>
+        <div class="card-header">
+            <h2>Personal Information</h2>
+        </div>
+        <div class="card-body">
+            <div class="profile-field">
+                <label>Email Address</label>
+                <p>{{ user.email }}</p>
+            </div>
+            {% if user.first_name or user.last_name %}
+                <div class="profile-field">
+                    <label>Name</label>
+                    <p>{{ user.get_full_name|default:"Not set" }}</p>
+                </div>
+            {% endif %}
+            <div class="profile-field">
+                <label>Member Since</label>
+                <p>{{ user.created_at|date:"F d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card lift-on-hover">
+        <div class="card-header">
+            <h2>Subscription Details</h2>
+        </div>
+        <div class="card-body">
+            <div class="profile-field">
+                <label>Subscription Status</label>
+                <div class="status-badge status-{{ user.subscription_status }}">
+                    {{ user.get_subscription_status_display }}
+                </div>
+            </div>
+            {% if user.has_lifetime_access %}
+                <div class="profile-field">
+                    <label>Access Type</label>
+                    <p class="lifetime-badge">✨ Lifetime Access</p>
+                </div>
+            {% elif user.subscription_end_date %}
+                <div class="profile-field">
+                    <label>Subscription Expires</label>
+                    <p>{{ user.subscription_end_date|date:"F d, Y" }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{% url 'users:settings' %}" class="btn btn-primary">Edit Settings</a>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">Back to Dashboard</a>
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Log Out</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

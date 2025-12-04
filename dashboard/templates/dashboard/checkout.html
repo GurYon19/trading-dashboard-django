@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Checkout - Confirm Free Trial{% endblock %}
+
+{% block content %}
+<div class="purchase-page">
+    <h1>✅ Confirm Your Free Trial</h1>
+
+    <div class="hero-section">
+        <h2>Review Your Selection Before Starting</h2>
+        <p class="hero-text">
+            You're about to start a <strong>7-day free trial</strong> of the ROA305 multi-instrument strategy.
+            Please review the instruments and summary stats below, then confirm to proceed.
+        </p>
+    </div>
+
+    <h2 class="section-title">🎯 Instruments Included in This Trial</h2>
+    {% if selected_instruments %}
+        <ul class="included-list">
+            {% for inst in selected_instruments %}
+                <li class="included-item">
+                    <strong>{{ inst|upper }}</strong> &mdash; part of the ROA305 strategy suite
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="cta-subtitle">
+            No specific instruments selected. The default ROA305 multi-instrument basket will be used.
+        </p>
+    {% endif %}
+
+    <div class="section-divider"></div>
+
+    <h2 class="section-title">📊 Summary Before You Start</h2>
+    <div class="stats-grid">
+        <div class="stat-card highlight">
+            <div class="stat-label">Total Net Profit (Backtest)</div>
+            <div class="stat-value positive">
+                {% if total_net_profit is not None %}
+                    ${{ total_net_profit|floatformat:0|intcomma }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="stat-delta">Historical results, not a guarantee of future performance</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-value">
+                {% if win_rate is not None %}
+                    {{ win_rate|floatformat:1 }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="stat-delta">Percent of winning trades in the backtest</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Trades</div>
+            <div class="stat-value">
+                {{ total_trades|default:"0"|intcomma }}
+            </div>
+            <div class="stat-delta">Sample size for the backtest</div>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="cta-section">
+        <h2 class="cta-heading">Ready to Start Your 7‑Day Free Trial?</h2>
+        <p class="cta-subtitle">
+            By confirming, you'll start a free trial tied to your registered Machine ID.
+            You can then download the NinjaTrader strategy files immediately.
+        </p>
+        <a href="{% url 'dashboard:download_trial' strategy_name=strategy_name %}?{{ request.GET.urlencode }}"
+           class="cta-button primary">
+            ✅ Confirm & Start Free Trial
+        </a>
+        <p class="cta-subtitle">
+            No credit card required • One trial per account and strategy • Machine-locked license
+        </p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="compliance-footer">
+        <h3>Risk Disclosure</h3>
+        <p>
+            <strong>HYPOTHETICAL PERFORMANCE RESULTS HAVE MANY INHERENT LIMITATIONS.</strong>
+            No representation is being made that any account will or is likely to achieve profits or losses
+            similar to those shown. In fact, there are frequently sharp differences between hypothetical
+            performance results and the actual results subsequently achieved by any particular trading program.
+        </p>
+        <p>
+            Trading futures and forex involves substantial risk of loss and is not suitable for all investors.
+            Only risk capital should be used for trading and you must carefully consider your own financial
+            situation and risk tolerance.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+
+

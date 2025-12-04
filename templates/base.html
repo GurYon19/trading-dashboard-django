@@ -1,0 +1,1359 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trading Dashboard{% endblock %}</title>
+
+    <!-- Typography: Inter font (Streamlit match) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Force 5-column grid layout */
+        .metrics-grid-5 {
+            grid-template-columns: repeat(5, 1fr) !important;
+        }
+        
+        /* Streamlit-style metrics - smaller, cleaner */
+        .metrics-grid-5 .metric-card {
+            padding: 0.75rem 1rem;
+        }
+        
+        .metrics-grid-5 .metric-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+        
+        .metrics-grid-5 .metric-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--accent-success);
+        }
+        
+        .metrics-grid-5 .metric-delta {
+            display: block;
+            color: var(--text-primary);
+        }
+        
+        /* Header Navigation with Animated Indicator */
+        .header-nav {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .header-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Hover Effect */
+        .header-nav a:hover {
+            background: rgba(34, 197, 94, 0.08);
+            color: #22c55e;
+            transform: translateY(-1px);
+        }
+        
+        .header-nav a:hover .nav-icon {
+            transform: scale(1.15);
+        }
+        
+        /* Active State with Green Glow */
+        .header-nav a.active {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.1));
+            color: #22c55e;
+            font-weight: 600;
+            box-shadow: 
+                0 0 20px rgba(34, 197, 94, 0.2),
+                inset 0 1px 0 rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Animated Bottom Border Indicator - Green */
+        .header-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            border-radius: 2px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+        
+        .header-nav a.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+        
+        .header-nav a:hover::after {
+            transform: translateX(-50%) scaleX(0.6);
+        }
+        
+        .header-nav .nav-icon {
+            font-size: 1.1rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Sidebar Filters */
+        .sidebar-filters {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background: var(--bg-elevated);
+            border-right: 1px solid var(--border-subtle);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 1.5rem;
+        }
+        
+        .sidebar-filters .filter-header h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        /* Adjust main content to account for sidebar */
+        .main-content {
+            margin-left: 280px;
+            padding-top: 60px;
+        }
+        
+        /* Hide old sidebar */
+        .sidebar {
+            display: none;
+        }
+        
+        /* Header Background Enhancement - Option B: Sophisticated Variation */
+        .top-header {
+            /* Slightly darker for emphasis */
+            background: linear-gradient(
+                135deg,
+                rgba(10, 16, 24, 0.98) 0%,
+                rgba(11, 18, 32, 0.95) 50%,
+                rgba(10, 16, 24, 0.98) 100%
+            ) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            
+            /* Border & Shadow */
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15) !important;
+            box-shadow: 
+                0 4px 30px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(245, 158, 11, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        /* Sidebar Filters - Enhanced Visual Polish */
+        .sidebar-filters {
+            background: #0b1220 !important;
+            box-shadow: 
+                2px 0 20px rgba(0, 0, 0, 0.3),
+                inset -1px 0 0 rgba(245, 158, 11, 0.08);
+            padding: 0;
+            overflow-y: auto;
+            
+            /* Custom Scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(245, 158, 11, 0.3) transparent;
+        }
+        
+        .sidebar-filters::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar-filters::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar-filters::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 3px;
+        }
+        
+        .sidebar-filters::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 158, 11, 0.5);
+        }
+        
+        /* Sidebar Header - Modern & Clean */
+        .sidebar-filters .filter-header {
+            padding: 1.5rem;
+            background: transparent;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Filter Content */
+        .sidebar-filters .filter-content {
+            padding: 1.5rem;
+        }
+        
+        /* Filter Sections - Minimal */
+        .sidebar-filters .filter-section {
+            margin-bottom: 2rem;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .sidebar-filters .filter-section:last-child {
+            border-bottom: none;
+        }
+        
+        .sidebar-filters .filter-section h4 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        
+        /* Date Inputs */
+        .sidebar-filters .date-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .sidebar-filters .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        
+        .sidebar-filters .filter-input {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-filters .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        
+        /* Action Buttons */
+        .sidebar-filters .instrument-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .sidebar-filters .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 6px;
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-filters .action-btn:hover {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        
+        /* Checkbox Labels */
+        .sidebar-filters .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .sidebar-filters .checkbox-label:hover {
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .sidebar-filters .checkbox-label input[type="checkbox"] {
+            margin-right: 0.6rem;
+            cursor: pointer;
+        }
+        
+        .sidebar-filters .checkbox-label span {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Apply/Reset Buttons */
+        .sidebar-filters .filter-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(245, 158, 11, 0.15);
+        }
+        
+        .sidebar-filters .btn-apply {
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .sidebar-filters .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .sidebar-filters .btn-reset {
+            padding: 0.75rem;
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-filters .btn-reset:hover {
+            background: rgba(148, 163, 184, 0.15);
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+        
+        /* Info Notes */
+        .sidebar-filters .info-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 0.6rem;
+            background: rgba(245, 158, 11, 0.05);
+            border-left: 2px solid var(--accent);
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+        
+        /* ========================================================================
+           NEW UI COMPONENTS - Collapsible Filters, Account Dropdown, etc.
+           ======================================================================== */
+        
+        /* Filter Header Apply Button - Button Style */
+        .filter-header-apply {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 6px;
+            color: #22c55e;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .filter-header-apply:hover {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Collapsible Filter Sections */
+        .filter-collapsible {
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .filter-summary {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .filter-summary::after {
+            content: '▼';
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        
+        details[open] .filter-summary::after {
+            transform: rotate(180deg);
+        }
+        
+        .filter-summary:hover {
+            color: var(--accent);
+        }
+        
+        .filter-collapsible[open] {
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        
+        .filter-collapsible .info-note,
+        .filter-collapsible .per-instrument-filters {
+            padding: 0 1rem 1rem 1rem;
+        }
+        
+        /* Account Toggle (replaces user info) */
+        .account-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            background: rgba(34, 197, 94, 0.08);
+            color: #22c55e;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .account-toggle:hover {
+            background: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .account-toggle .nav-icon {
+            font-size: 1.1rem;
+        }
+        
+        .account-label {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Account Dropdown Menu (if needed) */
+        .account-dropdown {
+            position: relative;
+        }
+        
+        .account-menu {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            min-width: 200px;
+            background: var(--bg-elevated);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .account-dropdown.open .account-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .account-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .account-menu a:last-child {
+            border-bottom: none;
+        }
+        
+        .account-menu a:hover {
+            background: rgba(245, 158, 11, 0.08);
+            color: var(--accent);
+        }
+        
+        /* ========================================================================
+           FILTER ENHANCEMENTS - Date Presets & Chips
+           ======================================================================== */
+        
+        /* Date Preset Buttons */
+        .date-presets {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            min-width: 45px;
+            padding: 0.4rem 0.6rem;
+            background: rgba(148, 163, 184, 0.08);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+        
+        .preset-btn.active {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+        }
+        
+        /* Selected Instruments Chips */
+        .selected-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+            min-height: 28px;
+        }
+        
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 12px;
+            color: #22c55e;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .chip-remove {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+        
+        .chip-remove:hover {
+            opacity: 1;
+        }
+        
+        .chip:hover {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+        
+        /* ========================================================================
+           MICRO-INTERACTIONS & POLISH - Toasts, Loading, Transitions
+           ======================================================================== */
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: var(--bg-elevated);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            min-width: 300px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            pointer-events: auto;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .toast.success {
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        
+        .toast-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .toast-message {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        
+        .toast-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 9999;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(34, 197, 94, 0.2);
+            border-top-color: #22c55e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Enhanced Focus States */
+        *:focus-visible {
+            outline: 2px solid rgba(34, 197, 94, 0.5);
+            outline-offset: 2px;
+        }
+        
+        button:focus-visible,
+        a:focus-visible {
+            outline: 2px solid rgba(34, 197, 94, 0.6);
+            outline-offset: 2px;
+        }
+        
+        /* Smooth Page Transitions */
+        .container {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Skeleton Loading States */
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(148, 163, 184, 0.1) 25%,
+                rgba(148, 163, 184, 0.15) 50%,
+                rgba(148, 163, 184, 0.1) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Tooltip Hints */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-4px);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="top-header">
+        <div class="header-brand">
+            <h1>📊 Trading Dashboard</h1>
+        </div>
+        
+        <!-- Main Navigation Links -->
+        <nav class="header-nav">
+            <a href="{% url 'dashboard:home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>
+                <span class="nav-icon">🏠</span> Home
+            </a>
+            <a href="{% url 'dashboard:performance' %}" {% if request.resolver_match.url_name == 'performance' %}class="active"{% endif %}>
+                <span class="nav-icon">📈</span> Performance
+            </a>
+            <a href="{% url 'dashboard:metrics' %}" {% if request.resolver_match.url_name == 'metrics' %}class="active"{% endif %}>
+                <span class="nav-icon">📊</span> Metrics
+            </a>
+            <a href="{% url 'dashboard:day_of_week' %}" {% if request.resolver_match.url_name == 'day_of_week' %}class="active"{% endif %}>
+                <span class="nav-icon">📅</span> Day of Week
+            </a>
+            <a href="{% url 'dashboard:strategy_images' %}" {% if request.resolver_match.url_name == 'strategy_images' %}class="active"{% endif %}>
+                <span class="nav-icon">🖼️</span> Images
+            </a>
+            <a href="{% url 'dashboard:purchase' %}" {% if request.resolver_match.url_name == 'purchase' %}class="active"{% endif %}>
+                <span class="nav-icon">🛒</span> Purchase
+            </a>
+            <a href="{% url 'dashboard:news' %}" {% if request.resolver_match.url_name == 'news' %}class="active"{% endif %}>
+                <span class="nav-icon">📰</span> News
+            </a>
+        </nav>
+        
+        <div class="header-user-info">
+            {% if user.is_authenticated %}
+                <div class="account-dropdown" id="accountDropdown">
+                    <button id="accountToggle" type="button" class="account-toggle">
+                        <span class="nav-icon">🧑‍💻</span>
+                        <span class="account-label">{{ user.email }}</span>
+                    </button>
+                    <div class="account-menu" id="accountMenu">
+                        <a href="{% url 'users:profile' %}">My Account</a>
+                        <form method="post" action="{% url 'account_logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" style="width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: var(--text-secondary); text-align: left; font-size: 0.85rem; cursor: pointer;">
+                                Log out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="account-toggle" style="text-decoration: none;">
+                    <span class="nav-icon">🧑‍💻</span>
+                    <span class="account-label">Account</span>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Sidebar with Filters -->
+    <aside class="sidebar-filters">
+        <div class="filter-header">
+            <button class="filter-header-apply" type="button" onclick="applyFilters()">Apply filters</button>
+        </div>
+        
+        <div class="filter-content">
+            <!-- Date Range Section -->
+            <div class="filter-section">
+                <h4>Date Range</h4>
+                
+                <!-- Quick Date Presets -->
+                <div class="date-presets">
+                    <button class="preset-btn" onclick="setDatePreset('7d')">7D</button>
+                    <button class="preset-btn" onclick="setDatePreset('30d')">30D</button>
+                    <button class="preset-btn" onclick="setDatePreset('90d')">90D</button>
+                    <button class="preset-btn" onclick="setDatePreset('ytd')">YTD</button>
+                    <button class="preset-btn" onclick="setDatePreset('all')">All</button>
+                </div>
+                
+                <div class="date-inputs">
+                    <div class="input-group">
+                        <label>From</label>
+                        <input type="date" id="startDate" class="filter-input" value="2025-01-01">
+                    </div>
+                    <div class="input-group">
+                        <label>To</label>
+                        <input type="date" id="endDate" class="filter-input" value="2025-11-01">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instrument Selection Section -->
+            <div class="filter-section">
+                <h4>Instruments</h4>
+                
+                <!-- Selected Instruments Chips -->
+                <div id="selectedChips" class="selected-chips"></div>
+                
+                <div class="instrument-actions">
+                    <button class="action-btn" onclick="selectAllInstruments()">Select All</button>
+                    <button class="action-btn" onclick="deselectAllInstruments()">Deselect All</button>
+                </div>
+                <div class="instrument-list">
+                    {% for instrument in all_instruments %}
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="instrument-checkbox" value="{{ instrument }}" data-name="{{ instrument }}" checked>
+                        <span>{{ instrument }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Long/Short Filters (Per Instrument) -->
+            <details class="filter-section filter-collapsible">
+                <summary class="filter-summary">Direction</summary>
+                <div class="info-note">
+                    Set trade direction filter for each selected instrument
+                </div>
+                <div id="longShortFilters" class="per-instrument-filters">
+                    <!-- Dynamically populated based on selected instruments -->
+                </div>
+            </details>
+
+            <!-- Contract Multiplier (Per Instrument) -->
+            <details class="filter-section filter-collapsible">
+                <summary class="filter-summary">Contracts</summary>
+                <div class="info-note">
+                    Set the number of contracts per instrument. All profit/loss values will be multiplied accordingly.
+                </div>
+                <div id="contractFilters" class="per-instrument-filters">
+                    <!-- Dynamically populated based on selected instruments -->
+                </div>
+            </details>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Toast Notifications Container -->
+        <div id="toastContainer" class="toast-container"></div>
+        
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>Loading data...</p>
+        </div>
+        
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer>
+            <p>
+                &copy; 2024 Trading Dashboard. All rights reserved.
+                | <a href="{% url 'dashboard:privacy' %}">Privacy Policy</a>
+                | <a href="{% url 'dashboard:terms' %}">Terms of Service</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // ========================================================================
+        // UTILITY FUNCTIONS - Toast Notifications & Loading
+        // ========================================================================
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${message}</span>
+                <span class="toast-close" onclick="this.parentElement.remove()">×</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        // Show/hide loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+        
+        // Toggle filter panel
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            const overlay = document.getElementById('filterOverlay');
+            
+            panel.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Update per-instrument filters
+        function updatePerInstrumentFilters() {
+            const checkboxes = document.querySelectorAll('.instrument-checkbox:checked');
+            const longShortContainer = document.getElementById('longShortFilters');
+            const contractContainer = document.getElementById('contractFilters');
+            
+            // Clear existing filters
+            longShortContainer.innerHTML = '';
+            contractContainer.innerHTML = '';
+            
+            // Create filters for each selected instrument
+            checkboxes.forEach(cb => {
+                const code = cb.value;
+                const name = cb.dataset.name;
+                
+                // Long/Short filter
+                const longShortDiv = document.createElement('div');
+                longShortDiv.className = 'input-group';
+                longShortDiv.innerHTML = `
+                    <label>${name}</label>
+                    <select class="filter-select" id="direction_${code}" data-instrument="${code}">
+                        <option value="All">All</option>
+                        <option value="Long Only">Long Only</option>
+                        <option value="Short Only">Short Only</option>
+                    </select>
+                `;
+                longShortContainer.appendChild(longShortDiv);
+                
+                // Contract multiplier
+                const contractDiv = document.createElement('div');
+                contractDiv.className = 'input-group';
+                contractDiv.innerHTML = `
+                    <label>${name}</label>
+                    <input type="number" class="filter-input" id="contracts_${code}" 
+                           data-instrument="${code}" value="1" min="1" max="100" step="1">
+                `;
+                contractContainer.appendChild(contractDiv);
+            });
+            
+            // Update chips display
+            updateSelectedChips();
+        }
+        
+        // Update selected instruments chips display
+        function updateSelectedChips() {
+            const chipsContainer = document.getElementById('selectedChips');
+            if (!chipsContainer) return;
+            
+            const selected = Array.from(document.querySelectorAll('.instrument-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selected.length === 0) {
+                chipsContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">No instruments selected</span>';
+                return;
+            }
+            
+            chipsContainer.innerHTML = selected.map(inst => `
+                <div class="chip">
+                    <span>${inst}</span>
+                    <span class="chip-remove" onclick="removeInstrument('${inst}')">×</span>
+                </div>
+            `).join('');
+        }
+        
+        // Remove instrument from selection
+        function removeInstrument(instrument) {
+            const checkbox = document.querySelector(`.instrument-checkbox[value="${instrument}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                updatePerInstrumentFilters();
+                updateFilterBadge();
+            }
+        }
+        
+        // Set date preset
+        function setDatePreset(preset) {
+            const endDate = new Date('2025-12-31');
+            let startDate = new Date();
+            
+            switch(preset) {
+                case '7d':
+                    startDate = new Date(endDate);
+                    startDate.setDate(endDate.getDate() - 7);
+                    break;
+                case '30d':
+                    startDate = new Date(endDate);
+                    startDate.setDate(endDate.getDate() - 30);
+                    break;
+                case '90d':
+                    startDate = new Date(endDate);
+                    startDate.setDate(endDate.getDate() - 90);
+                    break;
+                case 'ytd':
+                    startDate = new Date('2025-01-01');
+                    break;
+                case 'all':
+                    startDate = new Date('2025-01-01');
+                    break;
+            }
+            
+            // Format dates as YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            document.getElementById('startDate').value = formatDate(startDate);
+            document.getElementById('endDate').value = formatDate(endDate);
+            
+            // Update active state
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Select all instruments
+        function selectAllInstruments() {
+            const checkboxes = document.querySelectorAll('.instrument-checkbox');
+            checkboxes.forEach(cb => cb.checked = true);
+            updateFilterBadge();
+            updatePerInstrumentFilters();
+        }
+
+        // Deselect all instruments
+        function deselectAllInstruments() {
+            const checkboxes = document.querySelectorAll('.instrument-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateFilterBadge();
+            updatePerInstrumentFilters();
+        }
+
+        // Update filter badge count
+        function updateFilterBadge() {
+            const checkboxes = document.querySelectorAll('.instrument-checkbox:checked');
+            const badge = document.getElementById('filterBadge');
+            badge.textContent = checkboxes.length;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            const selectedInstruments = [];
+            const instrumentFilters = {};
+            const instrumentContracts = {};
+            
+            // Build URLSearchParams
+            const params = new URLSearchParams();
+            params.append('start_date', startDate);
+            params.append('end_date', endDate);
+            
+            document.querySelectorAll('.instrument-checkbox:checked').forEach(cb => {
+                const code = cb.value;
+                selectedInstruments.push(code);
+                params.append('instruments', code);
+                
+                // Get direction filter
+                const directionSelect = document.getElementById(`direction_${code}`);
+                if (directionSelect) {
+                    const dirValue = directionSelect.value;
+                    instrumentFilters[code] = dirValue;
+                    params.append(`filter_${code}`, dirValue);
+                }
+                
+                // Get contract multiplier
+                const contractInput = document.getElementById(`contracts_${code}`);
+                if (contractInput) {
+                    const contractValue = parseInt(contractInput.value);
+                    instrumentContracts[code] = contractValue;
+                    params.append(`contracts_${code}`, contractValue);
+                }
+            });
+
+            // Store filters in localStorage (for UI persistence)
+            localStorage.setItem('filters', JSON.stringify({
+                startDate,
+                endDate,
+                instruments: selectedInstruments,
+                instrumentFilters,
+                instrumentContracts
+            }));
+
+            // Redirect to current page with new query parameters
+            window.location.href = window.location.pathname + '?' + params.toString();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            localStorage.removeItem('filters');
+            window.location.href = window.location.pathname;
+        }
+
+        // Helper to save current UI state to localStorage
+        function saveCurrentStateToLocalStorage() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const selectedInstruments = [];
+            const instrumentFilters = {};
+            const instrumentContracts = {};
+            
+            document.querySelectorAll('.instrument-checkbox:checked').forEach(cb => {
+                const code = cb.value;
+                selectedInstruments.push(code);
+                
+                const directionSelect = document.getElementById(`direction_${code}`);
+                if (directionSelect) instrumentFilters[code] = directionSelect.value;
+                
+                const contractInput = document.getElementById(`contracts_${code}`);
+                if (contractInput) instrumentContracts[code] = parseInt(contractInput.value);
+            });
+
+            localStorage.setItem('filters', JSON.stringify({
+                startDate, endDate, instruments: selectedInstruments, instrumentFilters, instrumentContracts
+            }));
+        }
+
+        // Initialize filters (dates, instruments, per-instrument UI) based on URL/localStorage/defaults
+        (function initFilters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Case 1: URL has parameters - Source of Truth
+            if (urlParams.has('instruments') || urlParams.has('start_date')) {
+                // Set Date Range
+                if (urlParams.has('start_date')) document.getElementById('startDate').value = urlParams.get('start_date');
+                if (urlParams.has('end_date')) document.getElementById('endDate').value = urlParams.get('end_date');
+                
+                // Set Instruments
+                const instruments = urlParams.getAll('instruments');
+                if (instruments.length > 0) {
+                    // Explicitly sync checkboxes to URL instruments
+                    document.querySelectorAll('.instrument-checkbox').forEach(cb => {
+                        cb.checked = instruments.includes(cb.value);
+                    });
+                }
+                
+                // Update per-instrument UI
+                updatePerInstrumentFilters();
+                
+                // Set Per-Instrument Filters (Wait for DOM update)
+                setTimeout(() => {
+                    instruments.forEach(inst => {
+                        // Direction
+                        const dirKey = `filter_${inst}`;
+                        if (urlParams.has(dirKey)) {
+                            const select = document.getElementById(`direction_${inst}`);
+                            if (select) select.value = urlParams.get(dirKey);
+                        }
+                        
+                        // Contracts
+                        const contKey = `contracts_${inst}`;
+                        if (urlParams.has(contKey)) {
+                            const input = document.getElementById(`contracts_${inst}`);
+                            if (input) input.value = urlParams.get(contKey);
+                        }
+                    });
+                    
+                    // Update badge
+                    updateFilterBadge();
+                    
+                    // Save to localStorage to keep it in sync
+                    saveCurrentStateToLocalStorage(); 
+                }, 50);
+                
+            } else {
+                // Case 2: No URL params - Check localStorage
+                const saved = localStorage.getItem('filters');
+                if (saved) {
+                    try {
+                        const filters = JSON.parse(saved);
+                        // Construct URL and redirect
+                        const params = new URLSearchParams();
+                        params.append('start_date', filters.startDate);
+                        params.append('end_date', filters.endDate);
+                        
+                        if (filters.instruments && filters.instruments.length > 0) {
+                            filters.instruments.forEach(inst => params.append('instruments', inst));
+                            
+                            // Add per-instrument filters
+                            filters.instruments.forEach(inst => {
+                                if (filters.instrumentFilters && filters.instrumentFilters[inst]) {
+                                    params.append(`filter_${inst}`, filters.instrumentFilters[inst]);
+                                }
+                                if (filters.instrumentContracts && filters.instrumentContracts[inst]) {
+                                    params.append(`contracts_${inst}`, filters.instrumentContracts[inst]);
+                                }
+                            });
+                            
+                            // Redirect
+                            window.location.replace(window.location.pathname + '?' + params.toString());
+                            return; // Stop execution
+                        }
+                    } catch (e) {
+                        console.error("Error parsing saved filters", e);
+                        localStorage.removeItem('filters');
+                    }
+                }
+                
+                // Case 3: Default (All selected)
+                // Already set by HTML 'checked' attribute
+                updatePerInstrumentFilters();
+                updateFilterBadge();
+            }
+        })();
+
+        // Update badge and per-instrument filters when checkboxes change
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('instrument-checkbox')) {
+                updateFilterBadge();
+                updatePerInstrumentFilters();
+            }
+        });
+
+        // Account dropdown toggle
+        (function initAccountDropdown() {
+            const dropdown = document.getElementById('accountDropdown');
+            const toggle = document.getElementById('accountToggle');
+            const menu = document.getElementById('accountMenu');
+            if (!dropdown || !toggle || !menu) return;
+
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon for trading-dashboard
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/trading-dashboard
+ExecStart=/var/www/trading-dashboard/venv/bin/gunicorn \
+    --access-logfile - \
+    --workers 3 \
+    --bind unix:/var/www/trading-dashboard/trading-dashboard.sock \
+    config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+

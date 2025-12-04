@@ -1,0 +1,8 @@
+Trade number,Instrument,Account,Strategy,Market pos.,Qty,Entry price,Exit price,Entry time,Exit time,Entry name,Exit name,Profit,Cum. net profit,Commission,Clearing Fee,Exchange Fee,IP Fee,NFA Fee,MAE,MFE,ETD,Bars,
+1,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.1925,2.2147,14/01/2025 10:00:04,14/01/2025 15:58:59,RangeLongEntry_1,Exit on session close,$932.40,$932.40,$0.00,$0.00,$0.00,$0.00,$0.00,$567.00,$957.60,$25.20,23,
+2,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.1359,2.1623,31/01/2025 10:00:04,31/01/2025 15:18:10,RangeLongEntry_2,RangeLongTarget,$1108.80,$2041.20,$0.00,$0.00,$0.00,$0.00,$0.00,$743.40,$1108.80,$0.00,22,
+3,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.1100,2.1275,28/02/2025 09:45:00,28/02/2025 12:30:19,RangeLongEntry_3,RangeLongTarget,$735.00,$2776.20,$0.00,$0.00,$0.00,$0.00,$0.00,$176.40,$735.00,$0.00,12,
+4,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.0099,2.0219,13/05/2025 09:30:02,13/05/2025 10:31:05,RangeLongEntry_4,RangeLongTarget,$504.00,$3280.20,$0.00,$0.00,$0.00,$0.00,$0.00,$256.20,$504.00,$0.00,5,
+5,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.2592,2.2908,4/08/2025 09:30:03,4/08/2025 09:56:55,RangeLongEntry_5,RangeLongTarget,$1327.20,$4607.40,$0.00,$0.00,$0.00,$0.00,$0.00,$4.20,$1327.20,$0.00,2,
+6,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.1626,2.1807,21/10/2025 09:45:00,21/10/2025 10:25:00,RangeLongEntry_6,RangeLongTarget,$760.20,$5367.60,$0.00,$0.00,$0.00,$0.00,$0.00,$8.40,$760.20,$0.00,3,
+7,HO 12-25,Backtest,RangeOpenAdvanced305,Long,1,2.4743,2.5007,10/11/2025 10:00:00,10/11/2025 10:51:09,RangeLongEntry_7,RangeLongTarget,$1108.80,$6476.40,$0.00,$0.00,$0.00,$0.00,$0.00,$130.20,$1108.80,$0.00,4,
